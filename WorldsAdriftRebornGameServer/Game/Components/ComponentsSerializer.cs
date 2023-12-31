@@ -88,7 +88,7 @@ namespace WorldsAdriftRebornGameServer.Game.Components
                             // relativeBias - Controls interpolation between the player and their relative gameobject's position
                             ClientAuthoritativePlayerState.Data capData = new ClientAuthoritativePlayerState.Data(new ClientAuthoritativePlayerStateData(new Improbable.Math.Vector3f(0f, 0f, 0f),
                                 new Improbable.Corelib.Math.Quaternion(0, 0, 0, 0),
-                                new EntityId(2),
+                                new EntityId(1),
                                 1,
                                 0,
                                 new byte[] { },
@@ -121,6 +121,7 @@ namespace WorldsAdriftRebornGameServer.Game.Components
                             }
                             else
                             {
+                                // player will eventually need to spawn in ancient respawner
                                 Console.WriteLine("[Component " + componentId + "] accessed for [Entity] " + entityId);
                                 TransformStateData tInit = new TransformStateData(
                                     new FixedPointVector3(new Improbable.Collections.List<long> { 1000000, 1000000, 0 }),

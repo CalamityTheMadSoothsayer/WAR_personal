@@ -354,23 +354,27 @@ namespace WorldsAdriftRebornGameServer
         // TODO: Refactor to SyncStepAddEntities<T> for globally loaded entities, possibly using some other utility
         private static void SyncStepAddIslands( object peer )
         {
-            var entityId = NextEntityId;
-            var failed = new List<string>();
-            var generateLocations = TestIslands.Count == 0;
-            for (var i = 0; i < TestIslandCount; i++)
+            long entityId = EntityManager.NextEntityId;
+            List<string> failed = new List<string>();
+            bool generateLocations = TestIslands.Count != 0;
+            for (int i = 0; i < TestIslandCount; i++)
             {
-                var islandName = TestIslandNames[i];
+                string islandName = TestIslandNames[i];
                 if (generateLocations)
                 {
                     Random rnd = new Random();
                     var pos = i != 0
-                        ? new Improbable.Collections.List<long> { rnd.Next(0, 4) * 1000000, rnd.Next(0, 4) * 1000000, 0 }
+                        ? new Improbable.Collections.List<long> { i * 1000000, i * 1000000, 0 } // using i ensures 1 spawns at player for now and no overlaps
                         : new Improbable.Collections.List<long> { 0, 0, 0 };
                     TestIslands.Add((entityId, pos));
                 }
                 if (SendOPHelper.SendAddEntityOP((ENetPeerHandle)peer, entityId, islandName + "@Island", "notNeeded?"))
+                {
+                    Console.WriteLine("[ISLAND] - Island AddEntity for: " + islandName);
                     continue;
+                }
                 failed.Add(islandName);
+                entityId = EntityManager.NextEntityId;
             }
 
             if (failed.Count == 0)

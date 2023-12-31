@@ -42,27 +42,27 @@ namespace WorldsAdriftRebornGameServer
 
         private static List<long> playerEntityIDs = new List<long>();
 
-        public static List<(long entityId, Improbable.Collections.List<long> position)?> TestIslands =
-            new List<(long entityId, Improbable.Collections.List<long> position)?>();
+        //public static List<IslandEntities> TestIslands = new List<IslandEntities>();
 
         // TODO: Replace with some sort of Entity Manager system. Some code in ComponentsSerializer.cs is hardcoded for
         // TODO: Player=1 and Island=2, so make sure to fix that before removing below
-        private static int TestIslandCount = 4;
-        private static List<string> TestIslandNames;
+        private static int IslandsCount = 4;
+        private static List<string> IslandNames;
+        private static string IslandsPath = "D:\\Steam\\steamapps\\common\\WorldsAdrift\\Assets\\unity";
         public static long TestPlayerId => EntityManager.NextEntityId;
-        public static long TestIslandId => EntityManager.NextEntityId;
-        public static long NextEntityId => EntityManager.NextEntityId;
+        //public static long TestIslandId => EntityManager.NextEntityId;
+        //public static long NextEntityId => EntityManager.NextEntityId;
 
         public static unsafe void Main( string[] args )
         {
-            TestIslandNames = Directory.GetFiles(@"D:\Steam\steamapps\common\WorldsAdrift\Assets\unity")
+            IslandNames = Directory.GetFiles(IslandsPath)
                                        .Where(fp => !fp.EndsWith(".manifset"))
                                        .Select(fp =>
                                            Path.GetFileNameWithoutExtension(fp).Replace("@island_unityclient", ""))
                                        .ToList();
 
-            if (TestIslandCount > TestIslandNames.Count)
-                TestIslandCount = TestIslandNames.Count;
+            if (IslandsCount > IslandNames.Count)
+                IslandsCount = IslandNames.Count;
 
             Console.CancelKeyPress += delegate
             {
@@ -332,9 +332,9 @@ namespace WorldsAdriftRebornGameServer
         private static void SyncStepLoadIslands( object peer )
         {
             var failed = new List<string>();
-            for (var i = 0; i < TestIslandCount; i++)
+            for (var i = 0; i < IslandsCount; i++)
             {
-                var islandName = TestIslandNames[i];
+                var islandName = IslandNames[i];
                 var result = SendOPHelper.SendAssetLoadRequestOP((ENetPeerHandle)peer, "notNeeded?",
                     islandName + "@Island", "notNeeded?");
                 if (result)
@@ -354,22 +354,31 @@ namespace WorldsAdriftRebornGameServer
         // TODO: Refactor to SyncStepAddEntities<T> for globally loaded entities, possibly using some other utility
         private static void SyncStepAddIslands( object peer )
         {
-            var entityId = NextEntityId;
-            var failed = new List<string>();
-            var generateLocations = TestIslands.Count == 0;
-            for (var i = 0; i < TestIslandCount; i++)
+            long entityId = EntityManager.NextEntityId;
+            List<string> failed = new List<string>();
+            bool generateLocations = EntityManager.islandEntities.Count == 0;
+            for (int i = 0; i < IslandsCount; i++)
             {
-                var islandName = TestIslandNames[i];
+                string islandName = IslandNames[i];
                 if (generateLocations)
                 {
-                    Random rnd = new Random();
                     var pos = i != 0
-                        ? new Improbable.Collections.List<long> { rnd.Next(0, 4) * 1000000, rnd.Next(0, 4) * 1000000, 0 }
+                        ? new Improbable.Collections.List<long> { i * 1000000, i * 900000, 0 }
                         : new Improbable.Collections.List<long> { 0, 0, 0 };
-                    TestIslands.Add((entityId, pos));
+
+                    IslandEntities newIsland = new IslandEntities();
+                    newIsland.EntityId = entityId;
+                    newIsland.Name = islandName;
+                    newIsland.Position = pos;
+                    EntityManager.islandEntities.Add(newIsland);
+
+                    if (SendOPHelper.SendAddEntityOP((ENetPeerHandle)peer, entityId, islandName + "@Island", "notNeeded?"))
+                    {
+                        Console.WriteLine("[ISLAND] " + islandName + " added with entity " + entityId);
+                        entityId = EntityManager.NextEntityId;
+                        continue;
+                    }
                 }
-                if (SendOPHelper.SendAddEntityOP((ENetPeerHandle)peer, entityId, islandName + "@Island", "notNeeded?"))
-                    continue;
                 failed.Add(islandName);
             }
 

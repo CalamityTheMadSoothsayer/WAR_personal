@@ -33,6 +33,7 @@ using Improbable.Corelibrary.Transforms.Global;
 using Improbable.Math;
 using Improbable.Worker.Internal;
 using WorldsAdriftRebornGameServer.DLLCommunication;
+using WorldsAdriftRebornGameServer.Game.Entities;
 using WorldsAdriftRebornGameServer.Game.Items;
 using WorldsAdriftRebornGameServer.Networking.Singleton;
 
@@ -88,7 +89,7 @@ namespace WorldsAdriftRebornGameServer.Game.Components
                             // relativeBias - Controls interpolation between the player and their relative gameobject's position
                             ClientAuthoritativePlayerState.Data capData = new ClientAuthoritativePlayerState.Data(new ClientAuthoritativePlayerStateData(new Improbable.Math.Vector3f(0f, 0f, 0f),
                                 new Improbable.Corelib.Math.Quaternion(0, 0, 0, 0),
-                                new EntityId(2),
+                                new EntityId(1),
                                 1,
                                 0,
                                 new byte[] { },
@@ -105,10 +106,10 @@ namespace WorldsAdriftRebornGameServer.Game.Components
                             break;
 
                         case 190602:
-                            var matchingIsland = WorldsAdriftRebornGameServer.TestIslands.FirstOrDefault(i => i.HasValue && i.Value.entityId == entityId);
+                            var matchingIsland = EntityManager.islandEntities.SingleOrDefault(i => i.EntityId == entityId);
                             if (matchingIsland != null)
                             {
-                                TransformStateData tInit = new TransformStateData(new FixedPointVector3(matchingIsland.Value.position),
+                                TransformStateData tInit = new TransformStateData(new FixedPointVector3(matchingIsland.Position),
                                     new Quaternion32(1),
                                     null,
                                     new Improbable.Math.Vector3d(0f, 0f, 0f),

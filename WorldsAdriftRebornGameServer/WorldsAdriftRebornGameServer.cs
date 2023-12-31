@@ -363,7 +363,7 @@ namespace WorldsAdriftRebornGameServer
                 if (generateLocations)
                 {
                     var pos = i != 0
-                        ? new Improbable.Collections.List<long> { i * 1000000, i * 900000, 0 }
+                        ? new Improbable.Collections.List<long> { i * 10000000, i * 10000000, 0 }
                         : new Improbable.Collections.List<long> { 0, 0, 0 };
 
                     IslandEntities newIsland = new IslandEntities();

@@ -7,6 +7,11 @@ namespace WorldsAdriftRebornGameServer.Game.Items
 {
     public static class ItemHelper
     {
+        public const int SALVAGE_REPAIR_TOOL = -2;
+        public const int SHIP_PART_SCANNER_TOOL = -3;
+        public const int REPAIR_TOOL = -5;
+        public const int SCANNER_TOOL = -6;
+
         private static Dictionary<string, ValidItem> _allItems = new Dictionary<string, ValidItem>();
         private static readonly string itemPath = Path.Combine(
                                                             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
@@ -15,18 +20,18 @@ namespace WorldsAdriftRebornGameServer.Game.Items
 
         public class ValidItem
         {
-            public string itemTypeID { get; set; }
-            public string name { get; set; }
+            public string? itemTypeID { get; set; }
+            public string? name { get; set; }
             public int height { get; set; }
             public int width { get; set; }
             public int stacksize { get; set; } = -1;
-            public string iconName { get; set; }
+            public string? iconName { get; set; }
             public bool equippable { get; set; }
             public string characterSlot { get; set; } = "None";
             public string category { get; set; } = "";
             public string description { get; set; } = "";
             public int rarity { get; set; } = 0;
-            public Dictionary<string, string> metadata { get; set; }
+            public Dictionary<string, string>? metadata { get; set; }
 
             public Option<int> GetRarity()
             {
@@ -68,20 +73,26 @@ namespace WorldsAdriftRebornGameServer.Game.Items
         }
 
         public static ValidItem GetItem( string itemTypeId ) => AllItems[itemTypeId];
+        public static (int, int) GetDimensions( string itemTypeId )
+        {
+            var i = AllItems[itemTypeId];
+            return (i.width, i.height);
+        }
 
         public static ScalaSlottedInventoryItem MakeItem( int itemId, string itemTypeId, int x = 0, int y = 0,
             int amount = 1, int quality = 0, bool stashItem = false, int hotBarSlot = -1,
-            Dictionary<string, string> metaOverrides = null, bool slotted = false)
+            Dictionary<string, string>? metaOverrides = null, bool slotted = false )
         {
             var item = GetItem(itemTypeId);
-            return new ScalaSlottedInventoryItem(itemId, itemTypeId, amount,  !slotted ? "None" : item.characterSlot, -1, x, y, false,
+            return new ScalaSlottedInventoryItem(itemId, itemTypeId, amount, !slotted ? "None" : item.characterSlot, -1, x, y, false,
                 hotBarSlot, 0, quality, stashItem, item.Meta(metaOverrides), item.GetRarity());
         }
-        
-                public static string GetReferenceItems()
+
+        public static string GetReferenceItems()
         {
             System.Collections.Generic.List<object> o = new();
             foreach (ValidItem v in AllItems.Values)
+            {
                 o.Add(new
                 {
                     itemTypeId = v.itemTypeID,
@@ -94,10 +105,11 @@ namespace WorldsAdriftRebornGameServer.Game.Items
                     v.equippable,
                     wearable = v.characterSlot
                 });
+            }
             return JsonSerializer.Serialize(o);
         }
 
-        public static Map<string, string> GetDescriptions(bool resources = false)
+        public static Map<string, string> GetDescriptions( bool resources = false )
         {
             Map<string, string> map = new();
             foreach (ValidItem item in AllItems.Values)
@@ -138,14 +150,15 @@ namespace WorldsAdriftRebornGameServer.Game.Items
         {
             return new Improbable.Collections.List<ScalaSlottedInventoryItem>
             {
-                MakeItem(1, "gauntlet_salvage", -1, -1, hotBarSlot: 0),
-                MakeItem(2, "gauntlet_repair", -1, -1, hotBarSlot: 1),
-                MakeItem(3, "gauntlet_build", -1, -1, hotBarSlot: 2),
-                MakeItem(4, "gauntlet_scanner", -1, -1, hotBarSlot: 3),
+                MakeItem(SALVAGE_REPAIR_TOOL, "gauntlet_salvage", -1, -1, hotBarSlot: 0),
+                MakeItem(REPAIR_TOOL, "gauntlet_repair", -1, -1, hotBarSlot: 1),
+                MakeItem(SHIP_PART_SCANNER_TOOL, "gauntlet_build", -1, -1, hotBarSlot: 2),
+                MakeItem(SCANNER_TOOL, "gauntlet_scanner", -1, -1, hotBarSlot: 3),
                 //MakeItem(1100, "gold", 2, 3, 40, 9),
                 MakeItem(1101, "glider"),
                 MakeItem(1102, "torso_poncho", 0, 4),
-                MakeItem(1103, "head_devhat", 3, 0)
+                MakeItem(1103, "head_devhat", 3, 0),
+                MakeItem(1104, "torch", 7, 7)
             };
         }
 
